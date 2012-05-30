@@ -12,5 +12,6 @@ setup(name='gistopin',
     author='Alex Musayev',
     author_email='alex.usayev@gmail.com',
     url='https://github.com/dreikanter/gistopin',
-    scripts=['gistopin']),
-['feedparser', 'configparser', 'python-pinboard']
+    scripts=['gistopin'])
+
+#['feedparser', 'configparser', 'python-pinboard']

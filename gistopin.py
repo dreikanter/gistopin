@@ -3,16 +3,13 @@
 # Adds new Gist entries to users pinboard.in account.
 # See https://github.com/dreikanter/gistopin
 
-# import sys
-# import os
 from argparse import ArgumentParser
-import ConfigParser
+import configparser
 import feedparser
-from time import mktime
-import datetime
-import pinboard
 
 DEFAULT_CONF = "gistopin.ini"
+
+DEFAULT_CONF_SECTION = 'gistopin'
 
 HELP = """For detailed description and latest updates refer to
 project home page at https://github.com/dreikanter/gistopin"""
@@ -33,22 +30,19 @@ def get_hashtags(text, order=False):
     return sorted(tags) if order else tags
 
 
-def format_datetime(struct_time):
-    return datetime.fromtimestamp(mktime(struct_time))
-
-
 def get_config():
     """Parses command line and returns configuration dictionary"""
     """or termanates the program if --h option specified."""
     parser = ArgumentParser(description="Gist to pinboard.in importer", epilog=HELP)
     parser.add_argument("-c", "--conf", default=DEFAULT_CONF, metavar="INI", help="configuration file (default: %s)" % DEFAULT_CONF)
+    parser.add_argument("-s", "--section", default=DEFAULT_CONF_SECTION, metavar="SECTION", help="ini section (default: %s)" % DEFAULT_CONF_SECTION)
     args = parser.parse_args()
-    print "Using configuration from:", args.conf
+    print "Using configuration from: %s (section: %s)" % (args.conf, args.section)
 
     try:
-        conf = ConfigParser.ConfigParser()
+        conf = configparser.ConfigParser()
         conf.read(args.conf)
-        items = conf.items('gistopin')
+        items = conf.items(args.section)
         result = dict()
 
         for item in items:
@@ -72,7 +66,7 @@ def get_bool_param(conf_dict, param):
     return True if param in conf_dict and conf_dict[param].lower() in ['1', 'true'] else False
 
 
-def get_gists(github_user):
+def get_gist_entities(github_user):
     """Returns latest entries from gist feed"""
     url = get_gist_url(github_user)
     print("Retrieving gists from [%s]..." % url)
@@ -84,21 +78,41 @@ def get_gists(github_user):
             }
 
 
-def get_bookmarks(pinboard_user, pinboard_pwd, tags_list, from_dt):
-    """Returns latest bookmarks from pinboard.in feed"""
-    print("Retrieving pinboard bookmarks%s since %s..." %
-        (((" tagged by [%s]" % ", ".join(tags_list) if len(tags_list) > 0 else "")), str(from_dt)))
+def get_pinboard_entities(user, tags):
+    """Returns latest bookmarks from pinboard.in feed
+    Args:
+        user: Pinboard user name.
+        tags: Tags list.
+    Returns:
+        List of dicts containing 'title', 'link' and 'updated' items in each item.
+    """
 
-    pinboad = pinboard.open(pinboard_user, pinboard_pwd)
-    posts = pinboad.posts(tags_list, fromdt=from_dt)
-    print(len(posts))
-    exit()
-    for item in posts:
-        print {
-            'title': item.title,
-            'link': item.link,
-            '*': item
+    url = get_pinboard_url(user, tags)
+    print("Retrieving pinboard bookmarks%s..." %
+        ((" tagged by [%s]" % ", ".join(tags) if len(tags) > 0 else "")))
+    for entry in feedparser.parse(url).entries:
+        yield  {
+            'title': entry['title'],
+            'link': entry['link'],
+            'updated': entry['updated_parsed']
             }
+
+
+# def get_bookmarks(pinboard_user, pinboard_pwd, tags_list, from_st):
+#     from_dt = datetime.fromtimestamp(mktime(from_st))
+#     print("Retrieving pinboard bookmarks%s since %s..." %
+#         (((" tagged by [%s]" % ", ".join(tags_list) if len(tags_list) > 0 else "")), str(from_dt)))
+
+#     pinboad = pinboard.open(pinboard_user, pinboard_pwd)
+#     posts = pinboad.posts(tags_list)
+#     print(len(posts))
+#     exit()
+#     for item in posts:
+#         print {
+#             'title': item.title,
+#             'link': item.link,
+#             '*': item
+#             }
 
 
 def get_pin_pwd(pwd):
@@ -114,29 +128,31 @@ def get_pin_pwd(pwd):
         return result
 
 
+def get_new_gists(github_user, pinboard_user, tags):
+    gists = get_gist_entities(github_user)
+    pins = get_pinboard_entities(pinboard_user, tags)
+
+    if not len(gists) or not len(pins):
+        return gists
+
+    pinsd = {}
+    for pin in pins:
+        pinsd[pin['link']] = pin
+
+    result = []
+    for gist in gists:
+        if not gist['link'] in pinsd or pinsd[gist['link']]['updated'] < gist['updated']:
+            result.append(gist)
+    return result
+
+
 conf = get_config()
-gists = get_gists(conf["github_user"])
-dates = map(lambda x: x['updated'], gists)
-print(datetime.time.strftime("%y/%m/%d %H:%M:%S", min(dates)))
-exit()
-
-first_gist_dt = datetime.date.today() - datetime.timedelta(1)
-print(str(first_gist_dt))
-exit()
-bookmarks = get_bookmarks(conf['pinboard_user'], get_pin_pwd(conf['pinboard_pwd']),
-    conf['common_tags'], first_gist_dt)
-# description, extended, hash, href, tags, time
-
-#for item in get_gists(conf["github_user"]):
-#    print item
-
-#get_bookmarks(conf['pinboard_user'], conf['common_tags'])
-# for item in get_bookmarks(conf['pinboard_user'], conf['common_tags']):
-#     print item
+new_gists = get_new_gists(conf["github_user"], conf['pinboard_user'], conf['tags'])
+if not len(new_gists):
+    print("No new gists found.")
 
 #TBD:
-#read conf
-#read gist feed, take last items
-#read pinboard feed, take last items
-#check if there are new/updated gists
+#check if there are new/updated gists (updated > max(updated) from pins)
 #import new gists to pinboardin
+
+# "%Y/%m/%d %H:%M:%S"
