@@ -9,19 +9,13 @@ from argparse import ArgumentParser
 import ConfigParser
 import feedparser
 from time import mktime
-from datetime import datetime
+import datetime
+import pinboard
 
 DEFAULT_CONF = "gistopin.ini"
 
 HELP = """For detailed description and latest updates refer to
 project home page at https://github.com/dreikanter/gistopin"""
-
-VERBOSE = False
-
-
-def trace(message):
-    if VERBOSE:
-        print message
 
 
 def get_gist_url(username):
@@ -64,7 +58,6 @@ def get_config():
         else:
             result['common_tags'] = list(set([item.strip() for item in result['common_tags'].split(',')]))
 
-        result['verbose'] = get_bool_param(result, 'verbose')
         result['import_private'] = get_bool_param(result, 'import_private')
         result['use_hashtags'] = get_bool_param(result, 'use_hashtags')
 
@@ -82,7 +75,7 @@ def get_bool_param(conf_dict, param):
 def get_gists(github_user):
     """Returns latest entries from gist feed"""
     url = get_gist_url(github_user)
-    trace("Retrieving gists from [%s]..." % url)
+    print("Retrieving gists from [%s]..." % url)
     for entry in feedparser.parse(url).entries:
         yield {
             'title': entry.title,
@@ -91,27 +84,55 @@ def get_gists(github_user):
             }
 
 
-def get_bookmarks(pinboard_user, tags):
+def get_bookmarks(pinboard_user, pinboard_pwd, tags_list, from_dt):
     """Returns latest bookmarks from pinboard.in feed"""
-    url = get_pinboard_url(pinboard_user, tags)
-    trace("Retrieving gists from [%s]..." % url)
+    print("Retrieving pinboard bookmarks%s since %s..." %
+        (((" tagged by [%s]" % ", ".join(tags_list) if len(tags_list) > 0 else "")), str(from_dt)))
 
-    items = feedparser.parse(get_pinboard_url(pinboard_user, tags))['items']
-    for item in items:
-        yield {
+    pinboad = pinboard.open(pinboard_user, pinboard_pwd)
+    posts = pinboad.posts(tags_list, fromdt=from_dt)
+    print(len(posts))
+    exit()
+    for item in posts:
+        print {
             'title': item.title,
             'link': item.link,
             '*': item
             }
 
+
+def get_pin_pwd(pwd):
+    file_prefix = 'file://'
+    if not pwd.startswith(file_prefix):
+        return pwd
+
+    try:
+        f = file(pwd[len(file_prefix):])
+        result = f.readline().strip()
+        f.close()
+    finally:
+        return result
+
+
 conf = get_config()
-VERBOSE = conf['verbose']
+gists = get_gists(conf["github_user"])
+dates = map(lambda x: x['updated'], gists)
+print(datetime.time.strftime("%y/%m/%d %H:%M:%S", min(dates)))
+exit()
+
+first_gist_dt = datetime.date.today() - datetime.timedelta(1)
+print(str(first_gist_dt))
+exit()
+bookmarks = get_bookmarks(conf['pinboard_user'], get_pin_pwd(conf['pinboard_pwd']),
+    conf['common_tags'], first_gist_dt)
+# description, extended, hash, href, tags, time
 
 #for item in get_gists(conf["github_user"]):
 #    print item
 
-for item in get_bookmarks(conf['pinboard_user'], conf['common_tags']):
-    print item
+#get_bookmarks(conf['pinboard_user'], conf['common_tags'])
+# for item in get_bookmarks(conf['pinboard_user'], conf['common_tags']):
+#     print item
 
 #TBD:
 #read conf
