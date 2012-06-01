@@ -1,29 +1,33 @@
 #!/usr/bin/env python
-# coding: utf-8
 
-# Imports new Gist entries to pinboard.in bookmarks.
-# See https://github.com/dreikanter/gistopin for details.
-# Python 2.7 is required.
+"""GisToPin: Python script to bookmark new Gist entries with pinboard.in.
+See https://github.com/dreikanter/gistopin for details."""
 
-import feedparser
-import pinboard
 from argparse import ArgumentParser
-from configparser import ConfigParser
+from datetime import datetime
 from pprint import pprint, pformat
 from time import mktime, sleep
-from datetime import datetime
 from xml.dom.minidom import parse, parseString
+from configparser import ConfigParser
+import feedparser
+import pinboard
+
+__copyright__ = "Copyright 2012, Alex Musayev"
+__author__ = "Alex Musayev <http://alex.musayev.com>"
+__license__ = "BSD"
+__version__ = "1.0.0"
 
 DEFAULT_CONF = "./gistopin.ini"
-DEFAULT_CONF_SECTION = 'gistopin'
+DEFAULT_CONF_SECTION = "gistopin"
 DT_FORMAT = "%Y/%m/%d %H:%M:%S"
 DEBUG_MODE = True
 
-# pinboard._debug = DEBUG_MODE
+# Enables super-verbose output for pinboard.in API interaction:
+pinboard._debug = DEBUG_MODE
 
 
 def get_config():
-    parser = ArgumentParser(description="Gist to pinboard.in importer",
+    parser = ArgumentParser(description="Gist to pinboard.in importer, Version %s" % __version__,
         epilog="""For detailed description and latest updates refer to """
         """project home page at https://github.com/dreikanter/gistopin""")
 
@@ -44,7 +48,7 @@ def get_config():
             item.strip() for item in result['tags'].split(',')]
 
     def get_bool(param):
-        return True if param in result and result[param].lower() in ['1', 'true'] else False
+        return True if param in result and result[param].lower() in ['1', 'true', 'yes', 'y'] else False
 
     def get_pin_pwd():
         file_prefix = 'file://'
@@ -66,7 +70,7 @@ def get_config():
 
     except Exception, e:
         print "Error reading configuration:", e
-        exit()
+        exit(1)
 
 conf = get_config()
 
@@ -113,9 +117,9 @@ def get_new_gists(gists, pins):
 
 
 def post_gists():
-    pnb = pinboard.PinboardAccount(conf['pinboard_user'], conf['pinboard_pwd'])
+    pin = pinboard.PinboardAccount(conf['pinboard_user'], conf['pinboard_pwd'])
     gists = get_gist_entities()
-    pins = get_pinboard_entries(pnb, st2dt(min([g['utime'] for g in gists])))
+    pins = get_pinboard_entries(pin, st2dt(min([g['utime'] for g in gists])))
     print("Got %d existing bookmarks and %d gists." % (len(pins), len(gists)))
     new_gists, updated_gists = get_new_gists(gists, pins)
     errors_cnt = 0
@@ -128,7 +132,7 @@ def post_gists():
                 # TODO: Add replace parameter to pinboard module
                 # TODO: Add replace="yes" parameter to add() call
                 tags = set(extract_hashtags(g['description']) + conf['tags'])
-                pnb.add(g["href"], g["description"], tags=tags)
+                pin.add(g["href"], g["description"], tags=tags, replace="yes")
 
     post(new_gists, "new")
     post(updated_gists, "updated")
