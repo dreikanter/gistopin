@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: utf-8
 
 # Adds new Gist entries to users pinboard.in account.
 # See https://github.com/dreikanter/gistopin
@@ -9,18 +10,23 @@ from configparser import ConfigParser
 import feedparser
 from pprint import pprint, pformat
 import codecs
+from time import mktime
+from datetime import datetime
 
 DEFAULT_CONF = "./gistopin.ini"
-
 DEFAULT_CONF_SECTION = 'gistopin'
+PINBOARD_API_URL = "https://%s:%s@api.pinboard.in/"
+DEBUG_MODE = True
+DEBUG_PIN_FEED_URL = "http://localhost/gistopin/pinboard.rss.txt"
+DEBUG_GIST_FEED_URL = "http://localhost/gistopin/gist.atom.txt"
 
 
 def get_gist_url(username):
-    return "http://gist.github.com/%s.atom" % username
+    return DEBUG_GIST_FEED_URL if DEBUG_MODE else ("http://gist.github.com/%s.atom" % username)
 
 
 def get_pinboard_url(username, tags):
-    return "http://feeds.pinboard.in/rss/u:%s/%s" % (username, '/'.join(["t:" + item for item in tags]))
+    return DEBUG_PIN_FEED_URL if DEBUG_MODE else "http://feeds.pinboard.in/rss/u:%s/%s" % (username, '/'.join(["t:" + item for item in tags]))
 
 
 def get_hashtags(text, order=False):
@@ -28,6 +34,10 @@ def get_hashtags(text, order=False):
     tags = set([item.strip("#.,-\"\'&*^!") for item in text.split()
         if (item.startswith("#") and len(item) < 256)])
     return sorted(tags) if order else tags
+
+
+def struct_time_str(st, format="%Y/%m/%d %H:%M:%S"):
+    return datetime.fromtimestamp(mktime(st))
 
 
 def file_exists(file_name):
@@ -115,21 +125,21 @@ def get_pin_pwd(pwd):
 
 
 def get_new_gists(github_user, pinboard_user, tags):
-    gs = dict([(e['link'], e) for e in get_gist_entities(github_user)])
-    ps = dict([(e['link'], e) for e in get_pinboard_entities(pinboard_user, tags)])
-    return filter(gs.has_key, ps.keys())
-
-    # return filter(lambda g: (not g['link'] in pinsd or pinsd[g['link']] < g['updated']), gists)
+    gists = get_gist_entities(github_user)
+    # Note: Set comprehensions (added in python 2.7) causes SublimeLinter to display syntax error
+    pins = {e['link']: e['updated'] for e in get_pinboard_entities(pinboard_user, tags)}
+    print("Got %d existing bookmarks and %d gists" % (len(pins), len(gists)))
+    return filter(lambda g: not g['link'] in pins, gists), filter(lambda g: g['link'] in pins and pins[g['link']] < g['updated'], gists)
 
 
 conf = get_config()
-new_gists = get_new_gists(conf["github_user"], conf['pinboard_user'], conf['tags'])
-with codecs.open('debug.txt', 'w', 'utf-8') as f:
-    for item in new_gists:
-        f.write(pformat(item))
+new_gists, updated_gists = get_new_gists(conf["github_user"], conf['pinboard_user'], conf['tags'])
+
+print("\n\nnew_gists")
+pprint(new_gists)
+
+print("\n\nupdated_gists")
+pprint(updated_gists)
 
 #TBD:
-#check if there are new/updated gists (updated > max(updated) from pins)
 #import new gists to pinboardin
-
-# "%Y/%m/%d %H:%M:%S"
