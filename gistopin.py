@@ -20,10 +20,9 @@ __version__ = "1.0.0"
 DEFAULT_CONF = "./gistopin.ini"
 DEFAULT_CONF_SECTION = "gistopin"
 DT_FORMAT = "%Y/%m/%d %H:%M:%S"
-DEBUG_MODE = True
 
 # Enables super-verbose output for pinboard.in API interaction:
-pinboard._debug = DEBUG_MODE
+# pinboard._debug = True
 
 
 def get_config():
@@ -62,7 +61,7 @@ def get_config():
         result = {item[0]: item[1] for item in get_params()}
 
         result['tags'] = get_tags()
-        result['import_private'] = get_bool('import_private')
+        result['shared'] = get_bool('shared')
         result['use_hashtags'] = get_bool('use_hashtags')
         result['pinboard_pwd'] = get_pin_pwd()
 
@@ -87,6 +86,10 @@ def extract_hashtags(text):
 
 def st2dt(st):
     return datetime.fromtimestamp(mktime(st))
+
+
+def yesno(value):
+    return "yes" if value else "no"
 
 
 def struct_time_str(st, format=DT_FORMAT):
@@ -129,10 +132,8 @@ def post_gists():
             print("Importing %d %s gists to pinboard..." % (len(gists), gists_type))
             for g in gists:
                 print(" + %s..." % g['href'])
-                # TODO: Add replace parameter to pinboard module
-                # TODO: Add replace="yes" parameter to add() call
-                tags = set(extract_hashtags(g['description']) + conf['tags'])
-                pin.add(g["href"], g["description"], tags=tags, replace="yes")
+                tags = " ".join(sorted(set(extract_hashtags(g['description']) + conf['tags'])))
+                pin.add(g["href"], g["description"], tags=tags, replace=yesno(True), shared=yesno(conf['shared']))
 
     post(new_gists, "new")
     post(updated_gists, "updated")
