@@ -6,22 +6,22 @@ Gistopin (_gist-to-pinboard.in_) is a small python script for GitHub and [pinboa
 
 Gistopin requiring the following modules:
 
-* [feedparser](http://code.google.com/p/feedparser/)
-  `pip install feedparser` or `easy_install feedparser`.
-* [configparser](http://docs.python.org/library/configparser.html)
-  `pip install configparser` or `easy_install configparser`.
-* [Python-Pinboard](https://github.com/mgan59/python-pinboard)
-  `pip install -e git://github.com/mgan59/python-pinboard.git@v1.0#egg=python-pinboard`.
+* [feedparser](http://code.google.com/p/feedparser/) → 
+  `pip install feedparser` or `easy_install feedparser`
+* [configparser](http://docs.python.org/library/configparser.html) → 
+  `pip install configparser` or `easy_install configparser`
+* [Python-Pinboard](https://github.com/mgan59/python-pinboard) → 
+  `pip install -e git://github.com/mgan59/python-pinboard.git@v1.0#egg=python-pinboard`
 
 ## Usage
 
 The following command will run script using `gistopin.ini` configuration file:
 
-	`gistopin.py [config-name]`
+	gistopin.py [config-name]
 
 Also it could be added to crontab for regular execution. The following example schedules gistopin to run once each day in the midnight:
 
-	`crontab 00 12 * * * user python /path/to/gistopin.py /path/to/gistopin.ini`
+	crontab 00 12 * * * user python /path/to/gistopin.py /path/to/gistopin.ini
 
 
 ## Configuration parameters
