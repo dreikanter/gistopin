@@ -1,4 +1,4 @@
-### gistopin
+# gistopin
 
 Gistopin (_gist-to-pinboard.in_) is a small python script for GitHub and [pinboard.in](http://pinboard.in) users, which automatically adds bookmarks for new Gist entries to pinboard.in account. This allows to search easily through created gists using your favorite bookmarking service and keep a backup copy outside GitHub (if your [pinboard arching](http://pinboard.in/tour/#archive) is enabled).
 
