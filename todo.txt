@@ -1,1 +1,1 @@
-Validate configuration section in get_config().
+2012-06-04 - Validate configuration section in get_config().
