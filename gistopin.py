@@ -69,6 +69,7 @@ def get_config():
 
     except Exception, e:
         print "Error reading configuration:", e
+        print "Use -h for command line help"
         exit(1)
 
 conf = get_config()
@@ -140,4 +141,6 @@ def post_gists():
 
     print("Import succeeded." if not errors_cnt else "Import completed with %d errors." % errors_cnt)
 
-post_gists()
+
+if __name__ == '__main__':
+    post_gists()

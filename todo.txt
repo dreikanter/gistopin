@@ -1,0 +1,1 @@
+Validate configuration section in get_config().
