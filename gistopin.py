@@ -3,6 +3,7 @@
 """GisToPin: Python script to bookmark new Gist entries with pinboard.in.
 See https://github.com/dreikanter/gistopin for details."""
 
+from os.path import expandvars
 from argparse import ArgumentParser
 from datetime import datetime
 from pprint import pprint, pformat
@@ -53,7 +54,7 @@ def get_config():
         file_prefix = 'file://'
         pwd = result['pinboard_pwd']
         if pwd.startswith(file_prefix):
-            with open(pwd[len(file_prefix):]) as f:
+            with open(expandvars(pwd[len(file_prefix):])) as f:
                 return f.readline().strip()
         return pwd
 

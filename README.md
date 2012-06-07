@@ -34,7 +34,7 @@ Here is an example:
 
 	[gistopin]
 	pinboard_user = dreikanter
-	pinboard_pwd = file://../gistopin-private/pinboard-pwd.txt
+	pinboard_pwd = file://$secretplace/pinboard.txt
 	github_user = dreikanter
 	shared = no
 	tags = snippets, gistopin_check
@@ -43,8 +43,14 @@ Here is an example:
 Parameters explanation:
 
 * `pinboard_user` — pinboard.in user name.
-* `pinboard_pwd` — pinboard.in password. Yes, this might look a bit insecure, but HTTP Basic is the only supported way to authorize on pinboard in the meantime. For better security the password could be stored in separate text file outside script configuration. In this case full path should be specified in the following way: `file://secret/path/pwd.txt`. Pinboard API calls works through HTTPS so there are a bit fewer things to worry about.
+* `pinboard_pwd` — pinboard.in password. Yes, this might look a bit insecure, but HTTP Basic is the only supported way to authorize on pinboard in the meantime. For better security the password could be stored in a separate text file outside script configuration. In this case path should be specified in the following way: `file://secret/place/pwd.txt` (environment variables could be used in both %windows% or $unix styles).
 * `github_user` — Gist/GitHub user name.
 * `shared` — `yes` to share new bookmarks or `no` to keep them private. Pinboard configuration overrides this parameter if new bookmarks intended to be private.
 * `tags` — comma-separated list of common tags for new bookmarks. Also these tags will be used to check if the gists were imported already. Example: `snippets, gists`.
 * `use_hashtags` — `yes` to extract hash tags from Gist description and use them on pinboard.
+
+
+## FAQ
+
+Q: Why the import is so slow?
+A: Pinboard API has a limitation for 3 second intervals between requests. And each bookmark import is a separate request.
