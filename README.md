@@ -1,6 +1,6 @@
 # gistopin
 
-Gistopin (_gist-to-pinboard.in_) is a small python script for GitHub and [pinboard.in](http://pinboard.in) users, which automatically adds bookmarks for new Gist entries to pinboard.in account. This allows to search easily through created gists using your favorite bookmarking service and keep a backup copy outside GitHub (if your [pinboard arching](http://pinboard.in/tour/#archive) is enabled).
+Gistopin (acronym from _gist-to-pinboard.in_) is a small python script for GitHub and [pinboard.in](http://pinboard.in) users, which automatically adds bookmarks for new Gist entries to pinboard.in account. This allows to search easily through created gists using your favorite bookmarking service and keep a backup copy outside GitHub (if your [pinboard arching](http://pinboard.in/tour/#archive) is enabled).
 
 ## Installation
 
@@ -52,5 +52,5 @@ Parameters explanation:
 
 ## FAQ
 
-Q: Why the import is so slow?
-A: Pinboard API has a limitation for 3 second intervals between requests. And each bookmark import is a separate request.
+**Q:** Why the import is so slow?  
+**A:** Pinboard API has a limitation for 3 second intervals between requests. And each bookmark import is a separate request.
