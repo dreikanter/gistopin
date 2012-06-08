@@ -1,0 +1,9 @@
+2012-06-08
+ * Changes description added (let's say it will be something between relaese notes and todo).
+ * Dry run option added.
+ * Setup script updated.
+ * Configuration processing updated.
+ * Configuration validation added.
+
+2012-06-07
+ * Environment variables support added for pinboard_pwd pathes.

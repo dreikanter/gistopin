@@ -106,7 +106,7 @@ def get_config():
 def get_gist_entities(github_user):
     """Returns latest entries from gist feed"""
     url = GIST_FEED_URL % github_user
-    print("Retrieving gists from [%s]..." % url)
+    print("Retrieving gists for [%s]..." % github_user)
     return [{'description': e.title, 'href': e.link,
         'utime': max(e.published_parsed, e.updated_parsed)}
             for e in feedparser.parse(url).entries]
@@ -175,10 +175,12 @@ def main():
                 if not conf['dry']:
                     pin.add(g["href"], g["description"], tags=tags, replace=yesno(True), shared=yesno(conf['shared']))
 
-    post(new_gists, "new")
-    post(updated_gists, "updated")
-
-    print("Import succeeded." if not errors_cnt else "Import completed with %d errors." % errors_cnt)
+    if new_gists or updated_gists:
+        post(new_gists, "new")
+        post(updated_gists, "updated")
+        print("Import succeeded." if not errors_cnt else "Import completed with %d errors." % errors_cnt)
+    else:
+        print("Got no new or updated gists.")
 
 if __name__ == '__main__':
     main()
