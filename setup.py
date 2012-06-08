@@ -1,16 +1,23 @@
 #!/usr/bin/env python
 
+import sys
 from distutils.core import setup
+import gistopin
 
-setup(name='gistopin',
-    version='0.0.1',
-    author='Alex Musayev',
-    author_email='alex.musayev@gmail.com',
-    url='https://github.com/dreikanter/gistopin',
-    description='Python script to bookmark new Gist entries with pinboard.in service',
+scripts = ['gistopin.py']
+if sys.platform == 'win32':
+    scripts.append('gistopin.bat')
+
+setup(
+    name=gistopin.__name__,
+    description=gistopin.__doc__,
+    version=gistopin.__version__,
+    license=gistopin.__license__,
+    author=gistopin.__author__,
+    author_email=gistopin.__email__,
+    url=gistopin.__url__,
     long_description=open('README.md').read(),
-    scripts=['gistopin.py'],
-    license="BSD",
-    requires=['feedparser', 'configparser'],
-    py_modules=['pinboard'],
-    data_files=[('config', ['gistopin.ini'])],)
+    scripts=scripts,
+    platforms=['any'],
+    requires=['feedparser', 'configparser', 'pinboard'],
+)
