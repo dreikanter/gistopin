@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 
-import sys
-from distutils.core import setup
+from setuptools import setup, find_packages
 import gistopin
-
-scripts = ['gistopin.py']
-if sys.platform == 'win32':
-    scripts.append('gistopin.bat')
 
 setup(
     name=gistopin.__name__,
@@ -17,7 +12,23 @@ setup(
     author_email=gistopin.__email__,
     url=gistopin.__url__,
     long_description=open('README.md').read(),
-    scripts=scripts,
     platforms=['any'],
+    packages=find_packages(),
+    py_modules=['gistopin'],
+    entry_points={'console_scripts': ['gistopin = gistopin:main']},
+    include_package_data=True,
+    zip_safe=False,
+    scripts=['gistopin.py'],
     requires=['feedparser', 'configparser', 'pinboard'],
+    classifiers=[
+       'Development Status :: 5 - Production/Stable',
+       'Intended Audience :: Developers',
+       'License :: OSI Approved :: MIT License',
+       'Programming Language :: Python',
+       'Programming Language :: Python :: 2.7',
+       # TODO: Test and add other versions
+    ],
+    dependency_links=[
+        'https://github.com/mgan59/python-pinboard/tarball/master#egg=pinboard'
+    ],
 )
