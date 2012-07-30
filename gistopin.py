@@ -14,8 +14,8 @@ import pinboard
 __author__ = "Alex Musayev"
 __email__ = "alex.musayev@gmail.com"
 __copyright__ = "Copyright 2012, %s <http://alex.musayev.com>" % __author__
-__license__ = "BSD"
-__version_info__ = (1, 0, 0)
+__license__ = "MIT"
+__version_info__ = (1, 0, 1)
 __version__ = ".".join(map(str, __version_info__))
 __url__ = "http://github.com/dreikanter/gistopin"
 
